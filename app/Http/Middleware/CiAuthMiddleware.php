@@ -37,7 +37,6 @@ class CiAuthMiddleware
         }
 
         $maintenanceRow = $db->table('system_settings')
-            ->select('value, setting_value')
             ->where('setting_key', 'maintenance_mode')
             ->get()
             ->getRowArray();
