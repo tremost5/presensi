@@ -212,6 +212,32 @@ function ensureGuruPopupElements() {
 
 let manualRotation = 0;
 let autoRotation = 0;
+let currentGuruId = null;
+
+function rotationStorageKey(guruId) {
+  return `guru_photo_rotation_${guruId}`;
+}
+
+function loadSavedRotation(guruId) {
+  try {
+    const raw = localStorage.getItem(rotationStorageKey(guruId));
+    const value = Number(raw);
+    if (![0, 90, 180, 270].includes(value)) {
+      return 0;
+    }
+    return value;
+  } catch (e) {
+    return 0;
+  }
+}
+
+function saveRotation(guruId, rotation) {
+  try {
+    localStorage.setItem(rotationStorageKey(guruId), String(rotation));
+  } catch (e) {
+    // ignore storage issues (private mode/quota)
+  }
+}
 
 function applyFotoRotation(elFoto) {
   if (!elFoto) return;
@@ -222,6 +248,7 @@ function applyFotoRotation(elFoto) {
 /* OPEN PREVIEW */
 function openGuru(id){
 const popup = ensureGuruPopupElements();
+currentGuruId = id;
 fetch(`<?= base_url($prefixGuru . '/detail') ?>/${id}`,{
  headers:{'X-Requested-With':'XMLHttpRequest'}
 })
@@ -244,13 +271,16 @@ fetch(`<?= base_url($prefixGuru . '/detail') ?>/${id}`,{
  popup.elFoto.src = g.foto
    ? `${fotoBase}/${g.foto}`
    : defaultFoto;
- manualRotation = 0;
+ manualRotation = loadSavedRotation(id);
  autoRotation = 0;
  applyFotoRotation(popup.elFoto);
  if (popup.btnRotateFoto) {
    popup.btnRotateFoto.onclick = function () {
      manualRotation = (manualRotation + 90) % 360;
      applyFotoRotation(popup.elFoto);
+     if (currentGuruId !== null) {
+       saveRotation(currentGuruId, manualRotation);
+     }
    };
  }
  popup.elFoto.onload = function () {
