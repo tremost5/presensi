@@ -13,9 +13,8 @@ class AuthRegister extends BaseController
 
     public function store()
     {
-        helper(['form', 'face', 'wa']);
+        helper(['form', 'face', 'wa', 'wa_template']);
 
-        // ===== NORMALISASI WA =====
         $noHp = formatWA($this->request->getPost('no_hp'));
         $tglLahir = $this->normalizeTanggalLahir((string) $this->request->getPost('tanggal_lahir'));
 
@@ -31,7 +30,6 @@ class AuthRegister extends BaseController
                 ->with('errors', ['tanggal_lahir' => 'Format tanggal lahir tidak valid. Gunakan DD-MM-YYYY, YYYY-MM-DD, atau DDMMYYYY.']);
         }
 
-        // inject ulang ke POST
         $this->request->setGlobal('post', array_merge(
             $this->request->getPost(),
             [
@@ -40,46 +38,45 @@ class AuthRegister extends BaseController
             ]
         ));
 
-        // ===== VALIDASI =====
         $rules = [
-            'nama_depan'    => 'required',
+            'nama_depan' => 'required',
             'nama_belakang' => 'required',
-            'username'      => 'required|is_unique[users.username]',
-            'email'         => 'required|valid_email|is_unique[users.email]',
-            'no_hp'         => 'required|min_length[10]|max_length[15]|is_unique[users.no_hp]',
-            'password'      => 'required|min_length[6]',
-            'alamat'        => 'required',
+            'username' => 'required|is_unique[users.username]',
+            'email' => 'required|valid_email|is_unique[users.email]',
+            'no_hp' => 'required|min_length[10]|max_length[15]|is_unique[users.no_hp]',
+            'password' => 'required|min_length[6]',
+            'alamat' => 'required',
             'tanggal_lahir' => 'required|valid_date[Y-m-d]',
         ];
 
         $messages = [
             'username' => [
-                'is_unique' => 'Username sudah terdaftar, silakan gunakan username lain.'
+                'is_unique' => 'Username sudah terdaftar, silakan gunakan username lain.',
             ],
             'email' => [
-                'is_unique'    => 'Email sudah terdaftar, silakan gunakan email lain.',
-                'valid_email'  => 'Format email tidak valid.'
+                'is_unique' => 'Email sudah terdaftar, silakan gunakan email lain.',
+                'valid_email' => 'Format email tidak valid.',
             ],
             'no_hp' => [
                 'is_unique' => 'Nomor WhatsApp sudah terdaftar.',
                 'min_length' => 'Nomor WhatsApp terlalu pendek.',
-                'max_length' => 'Nomor WhatsApp terlalu panjang.'
+                'max_length' => 'Nomor WhatsApp terlalu panjang.',
             ],
             'password' => [
-                'min_length' => 'Password minimal 6 karakter.'
+                'min_length' => 'Password minimal 6 karakter.',
             ],
             'nama_depan' => [
-                'required' => 'Nama depan wajib diisi.'
+                'required' => 'Nama depan wajib diisi.',
             ],
             'nama_belakang' => [
-                'required' => 'Nama belakang wajib diisi.'
+                'required' => 'Nama belakang wajib diisi.',
             ],
             'alamat' => [
-                'required' => 'Alamat wajib diisi.'
+                'required' => 'Alamat wajib diisi.',
             ],
             'tanggal_lahir' => [
                 'required' => 'Tanggal lahir wajib diisi.',
-                'valid_date' => 'Format tanggal lahir tidak valid.'
+                'valid_date' => 'Format tanggal lahir tidak valid.',
             ],
         ];
 
@@ -89,7 +86,6 @@ class AuthRegister extends BaseController
                 ->with('errors', $this->validator->getErrors());
         }
 
-        // ===== UPLOAD FOTO =====
         $foto = $this->request->getFile('foto');
         $namaFoto = 'default.png';
 
@@ -104,76 +100,62 @@ class AuthRegister extends BaseController
             cropWajah($folder . $namaFoto);
         }
 
-        // ===== INSERT DB =====
         $model = new UserModel();
         $model->insert([
-            'role_id'       => 3,
-            'nama_depan'    => $this->request->getPost('nama_depan'),
+            'role_id' => 3,
+            'nama_depan' => $this->request->getPost('nama_depan'),
             'nama_belakang' => $this->request->getPost('nama_belakang'),
-            'username'      => $this->request->getPost('username'),
-            'email'         => $this->request->getPost('email'),
-            'no_hp'         => $noHp,
-            'password'      => password_hash(
-                $this->request->getPost('password'),
-                PASSWORD_DEFAULT
-            ),
-            'alamat'        => $this->request->getPost('alamat'),
+            'username' => $this->request->getPost('username'),
+            'email' => $this->request->getPost('email'),
+            'no_hp' => $noHp,
+            'password' => password_hash((string) $this->request->getPost('password'), PASSWORD_DEFAULT),
+            'alamat' => $this->request->getPost('alamat'),
             'tanggal_lahir' => $this->request->getPost('tanggal_lahir'),
-            'foto'          => $namaFoto,
-            'status'        => 'nonaktif'
+            'foto' => $namaFoto,
+            'status' => 'nonaktif',
         ]);
 
-        // ================================
-// WA KE ADMIN
-// ================================
-$waAdmin = kirimWA(
-    '6281232944843',
-    "📢 *PENDAFTARAN GURU BARU*\n\n"
-    . "Nama: {$this->request->getPost('nama_depan')} {$this->request->getPost('nama_belakang')}\n"
-    . "Username: {$this->request->getPost('username')}\n"
-    . "No WA: {$noHp}\n\n"
-    . "Status: MENUNGGU AKTIVASI"
-);
+        $namaDepan = (string) $this->request->getPost('nama_depan');
+        $namaBelakang = (string) $this->request->getPost('nama_belakang');
+        $namaLengkap = trim($namaDepan . ' ' . $namaBelakang);
+        $username = (string) $this->request->getPost('username');
 
-if (!$waAdmin) {
-    log_message('error', 'WA ADMIN GAGAL TERKIRIM');
-}
+        $vars = [
+            'nama_lengkap' => $namaLengkap,
+            'nama_depan' => $namaDepan,
+            'nama_belakang' => $namaBelakang,
+            'username' => $username,
+            'no_hp' => $noHp,
+            'status' => 'menunggu aktivasi admin',
+        ];
 
-// ================================
-// WA KE PENDAFTAR
-// ================================
-$waUser = kirimWA(
-    $noHp,
-    "Shalom 🙏\n\n"
-    . "Terima kasih telah mendaftar sebagai guru.\n\n"
-    . "📌 Status akun Anda saat ini:\n"
-    . "*MENUNGGU AKTIVASI ADMIN*\n\n"
-    . "Kami akan menghubungi Anda kembali setelah akun diaktifkan.\n\n"
-    . "Tuhan Yesus memberkati ✨"
-);
+        $adminMessage = waTemplateRender(waTemplateGet('register_admin'), $vars);
+        foreach (waRecipientNumbers([1, 2], true) as $adminNo) {
+            if (!kirimWA($adminNo, $adminMessage)) {
+                log_message('error', 'WA admin gagal terkirim ke: ' . $adminNo);
+            }
+        }
 
-if (!$waUser) {
-    log_message('error', 'WA PENDAFTAR GAGAL TERKIRIM: '.$noHp);
-}
+        $userMessage = waTemplateRender(waTemplateGet('register_user'), $vars);
+        if (!kirimWA($noHp, $userMessage)) {
+            log_message('error', 'WA pendaftar gagal terkirim: ' . $noHp);
+        }
 
-// ================================
-// REDIRECT AKHIR
-// ================================
-return redirect()->to('/register-pending');
-}
-    // ===== AJAX VALIDASI REALTIME =====
+        return redirect()->to('/register-pending');
+    }
+
     public function checkUser()
     {
         $model = new UserModel();
 
         $field = $this->request->getPost('field');
-        $value = trim($this->request->getPost('value'));
+        $value = trim((string) $this->request->getPost('value'));
 
         if (!$field || !$value) {
             return $this->response->setJSON(['valid' => true]);
         }
 
-        if (!in_array($field, ['email', 'username', 'no_hp'])) {
+        if (!in_array($field, ['email', 'username', 'no_hp'], true)) {
             return $this->response->setJSON(['valid' => true]);
         }
 
@@ -186,12 +168,12 @@ return redirect()->to('/register-pending');
 
         if ($exists) {
             return $this->response->setJSON([
-                'valid'   => false,
+                'valid' => false,
                 'message' => match ($field) {
-                    'email'    => 'Email sudah terdaftar',
+                    'email' => 'Email sudah terdaftar',
                     'username' => 'Username sudah digunakan',
-                    'no_hp'    => 'Nomor WhatsApp sudah terdaftar',
-                }
+                    'no_hp' => 'Nomor WhatsApp sudah terdaftar',
+                },
             ]);
         }
 
@@ -224,6 +206,7 @@ return redirect()->to('/register-pending');
                 if ($year < 1940 || $year > (int) date('Y')) {
                     return null;
                 }
+
                 return $dt->format('Y-m-d');
             }
         }

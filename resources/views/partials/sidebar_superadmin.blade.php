@@ -138,6 +138,14 @@ SYSTEM
 </li>
 
 <li class="nav-item">
+  <a href="<?= base_url('superadmin/wa-template') ?>"
+     class="nav-link <?= str_contains(uri_string(),'superadmin/wa-template')?'active':'' ?>">
+    <i class="nav-icon fab fa-whatsapp"></i>
+    <p>WA Template</p>
+  </a>
+</li>
+
+<li class="nav-item">
   <a href="<?= base_url('superadmin/tahun-ajaran') ?>"
      class="nav-link <?= str_contains(uri_string(),'superadmin/tahun-ajaran')?'active':'' ?>">
     <i class="nav-icon fas fa-calendar-alt"></i>

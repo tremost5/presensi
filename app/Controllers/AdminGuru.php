@@ -116,7 +116,7 @@ class AdminGuru extends BaseController
         return $this->response->setStatusCode(403);
     }
 
-    helper('wa');
+    helper(['wa', 'wa_template']);
 
     $user = $this->userModel->find($id);
     if (!$user || $user['role_id'] != 3) {
@@ -126,43 +126,40 @@ class AdminGuru extends BaseController
     $statusLama = $user['status'];
     $statusBaru = ($statusLama === 'aktif') ? 'nonaktif' : 'aktif';
 
-    // UPDATE STATUS
     $this->userModel->update($id, [
-        'status'        => $statusBaru,
+        'status' => $statusBaru,
         'session_token' => $statusBaru === 'nonaktif' ? null : $user['session_token'],
         'last_activity' => $statusBaru === 'nonaktif' ? null : $user['last_activity'],
     ]);
 
-    // ===============================
-    // WHATSAPP NOTIFICATION
-    // ===============================
-    if (!empty($user['no_hp'])) {
+    $namaDepan = (string) ($user['nama_depan'] ?? '');
+    $namaBelakang = (string) ($user['nama_belakang'] ?? '');
+    $namaLengkap = trim($namaDepan . ' ' . $namaBelakang);
+    $username = (string) ($user['username'] ?? '');
+    $targetNo = (string) ($user['no_hp'] ?? '');
 
-        // 👉 SAAT DIAKTIFKAN
-        if ($statusLama === 'nonaktif' && $statusBaru === 'aktif') {
-            kirimWA(
-                $user['no_hp'],
-                "Shalom 🙏\n\n"
-                ."Akun guru Anda telah *AKTIF* ✅\n\n"
-                ."👤 Nama: {$user['nama_depan']} {$user['nama_belakang']}\n"
-                ."🔑 Username: {$user['username']}\n\n"
-                ."Silakan login dan mulai menggunakan sistem.\n\n"
-                ."Tuhan Yesus memberkati ✨"
-            );
-        }
+    $vars = [
+        'nama_lengkap' => $namaLengkap,
+        'nama_depan' => $namaDepan,
+        'nama_belakang' => $namaBelakang,
+        'username' => $username,
+        'no_hp' => $targetNo,
+        'status' => $statusBaru,
+    ];
 
-        // 👉 SAAT DINONAKTIFKAN
-        if ($statusLama === 'aktif' && $statusBaru === 'nonaktif') {
-            kirimWA(
-                $user['no_hp'],
-                "Shalom 🙏\n\n"
-                ."Kami informasikan bahwa akun guru Anda saat ini *DINONAKTIFKAN* ⛔\n\n"
-                ."👤 Nama: {$user['nama_depan']} {$user['nama_belakang']}\n\n"
-                ."Jika ini terjadi karena kesalahan atau membutuhkan klarifikasi,\n"
-                ."silakan hubungi Admin Sekolah.\n\n"
-                ."Tuhan Yesus memberkati ✨"
-            );
+    $templateKey = $statusBaru === 'aktif' ? 'guru_status_active' : 'guru_status_inactive';
+    $rendered = waTemplateRender(waTemplateGet($templateKey), $vars);
+
+    if ($targetNo !== '') {
+        kirimWA($targetNo, $rendered);
+    }
+
+    $adminNotice = "[NOTIF STATUS GURU]\n" . $rendered;
+    foreach (waRecipientNumbers([1, 2], true) as $recipientNo) {
+        if ($recipientNo === $targetNo) {
+            continue;
         }
+        kirimWA($recipientNo, $adminNotice);
     }
 
     return $this->response->setJSON([
@@ -344,3 +341,5 @@ class AdminGuru extends BaseController
         }
     }
 }
+
+

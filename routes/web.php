@@ -35,6 +35,7 @@ use App\Controllers\Superadmin\SystemLog;
 use App\Controllers\Superadmin\TahunAjaran;
 use App\Controllers\Superadmin\Tingkat;
 use App\Controllers\Superadmin\UserRole;
+use App\Controllers\Superadmin\WaTemplate as SuperadminWaTemplate;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/laravel-presensi/public', static fn () => redirect('/'));
@@ -203,6 +204,8 @@ Route::prefix('superadmin')->middleware(['auth', 'role:1'])->group(function (): 
 
     Route::get('/log', [SuperadminLog::class, 'index']);
     Route::get('/monitoring', [Monitoring::class, 'index']);
+    Route::get('/wa-template', [SuperadminWaTemplate::class, 'index']);
+    Route::post('/wa-template/save', [SuperadminWaTemplate::class, 'save']);
 
     Route::get('/users', [UserRole::class, 'index']);
     Route::post('/users/update', [UserRole::class, 'update']);
