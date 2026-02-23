@@ -240,24 +240,32 @@ Tuhan Yesus Memberkati {nama} Selalu 😊
     =============================== */
     $dobelHariIni = $this->absensiService->unresolvedDoubleCount($today);
 
+    $usersFields = array_map('strtolower', $this->db->getFieldNames('users'));
+    $hasUserCreatedAt = in_array('created_at', $usersFields, true);
+    $todayStart = $today . ' 00:00:00';
+
     $guruNonaktifCount = (int) $this->db->table('users')
         ->where('role_id', 3)
         ->where('status', 'nonaktif')
         ->countAllResults();
 
-    $guruBaruHariIniCount = (int) $this->db->table('users')
-        ->where('role_id', 3)
-        ->where('created_at >=', $today . ' 00:00:00')
-        ->countAllResults();
+    $guruBaruHariIniCount = 0;
+    $guruBaruHariIniList = [];
+    if ($hasUserCreatedAt) {
+        $guruBaruHariIniCount = (int) $this->db->table('users')
+            ->where('role_id', 3)
+            ->where('created_at >=', $todayStart)
+            ->countAllResults();
 
-    $guruBaruHariIniList = $this->db->table('users')
-        ->select('nama_depan, nama_belakang, created_at, status')
-        ->where('role_id', 3)
-        ->where('created_at >=', $today . ' 00:00:00')
-        ->orderBy('created_at', 'DESC')
-        ->limit(5)
-        ->get()
-        ->getResultArray();
+        $guruBaruHariIniList = $this->db->table('users')
+            ->select('nama_depan, nama_belakang, created_at, status')
+            ->where('role_id', 3)
+            ->where('created_at >=', $todayStart)
+            ->orderBy('created_at', 'DESC')
+            ->limit(5)
+            ->get()
+            ->getResultArray();
+    }
 
     /* ===============================
        STATUS GURU

@@ -1,8 +1,18 @@
-const CACHE_NAME = 'presensi-guru-v1';
+const CACHE_NAME = 'presensi-guru-v2';
 const OFFLINE_URL = '/pwa/offline.html';
 
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll([OFFLINE_URL])));
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    try {
+      const response = await fetch(OFFLINE_URL, { cache: 'no-cache' });
+      if (response && response.ok) {
+        await cache.put(OFFLINE_URL, response.clone());
+      }
+    } catch (e) {
+      // Don't fail installation when offline page is unavailable.
+    }
+  })());
   self.skipWaiting();
 });
 

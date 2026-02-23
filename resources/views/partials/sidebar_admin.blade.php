@@ -31,24 +31,27 @@ if ($canAdminAbsen) {
 if ($canAdminGuru) {
   try {
     $db = \Config\Database::connect();
-    $guruNonaktifCount = (int) $db->table('users')
-      ->where('role_id', 3)
-      ->where('status', 'nonaktif')
-      ->countAllResults();
+    $fields = array_map('strtolower', $db->getFieldNames('users'));
+    $hasCreatedAt = in_array('created_at', $fields, true);
+    $todayStart = date('Y-m-d 00:00:00');
 
-    $guruBaruDaftarCount = (int) $db->table('users')
-      ->where('role_id', 3)
-      ->where('created_at >=', date('Y-m-d 00:00:00'))
-      ->countAllResults();
+    $select = "SUM(CASE WHEN status = 'nonaktif' THEN 1 ELSE 0 END) AS guru_nonaktif";
+    if ($hasCreatedAt) {
+      $select .= ", SUM(CASE WHEN created_at >= " . $db->escape($todayStart) . " THEN 1 ELSE 0 END) AS guru_baru";
+    }
 
-    $guruAlertCount = (int) $db->table('users')
+    $row = $db->table('users')
+      ->select($select, false)
       ->where('role_id', 3)
-      ->groupStart()
-        ->where('status', 'nonaktif')
-        ->orWhere('created_at >=', date('Y-m-d 00:00:00'))
-      ->groupEnd()
-      ->countAllResults();
+      ->get()
+      ->getRowArray();
+
+    $guruNonaktifCount = (int) ($row['guru_nonaktif'] ?? 0);
+    $guruBaruDaftarCount = $hasCreatedAt ? (int) ($row['guru_baru'] ?? 0) : 0;
+    $guruAlertCount = $guruNonaktifCount + $guruBaruDaftarCount;
   } catch (\Throwable $e) {
+    $guruNonaktifCount = 0;
+    $guruBaruDaftarCount = 0;
     $guruAlertCount = 0;
   }
 }

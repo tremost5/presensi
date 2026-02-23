@@ -1,12 +1,13 @@
-const CACHE_NAME = 'dscmkids-unified-v4';
+const CACHE_NAME = 'dscmkids-unified-v5';
 const SCOPE_PATH = new URL(self.registration.scope).pathname.replace(/\/$/, '');
-const OFFLINE_URL = `${SCOPE_PATH}/pwa/offline.html`;
+const ROOT_PATH = SCOPE_PATH.endsWith('/pwa') ? '' : SCOPE_PATH;
+const OFFLINE_URL = `${ROOT_PATH}/pwa/offline.html`;
 
 const APP_SHELL_ASSETS = [
   OFFLINE_URL,
-  `${SCOPE_PATH}/assets/adminlte/css/adminlte.min.css`,
-  `${SCOPE_PATH}/assets/adminlte/plugins/fontawesome-free/css/all.min.css`,
-  `${SCOPE_PATH}/assets/custom/ui-phase1.css`,
+  `${ROOT_PATH}/assets/adminlte/css/adminlte.min.css`,
+  `${ROOT_PATH}/assets/adminlte/plugins/fontawesome-free/css/all.min.css`,
+  `${ROOT_PATH}/assets/custom/ui-phase1.css`,
 ];
 
 function isSameOrigin(url) {
@@ -49,9 +50,19 @@ function isStaticAsset(path) {
 }
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL_ASSETS))
-  );
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    await Promise.all(APP_SHELL_ASSETS.map(async (asset) => {
+      try {
+        const response = await fetch(asset, { cache: 'no-cache' });
+        if (response && response.ok) {
+          await cache.put(asset, response.clone());
+        }
+      } catch (e) {
+        // Skip broken assets instead of failing SW install.
+      }
+    }));
+  })());
   self.skipWaiting();
 });
 
