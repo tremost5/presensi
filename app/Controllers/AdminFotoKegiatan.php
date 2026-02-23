@@ -40,10 +40,10 @@ class AdminFotoKegiatan extends BaseController
                 a.tanggal,
                 a.jam,
                 a.selfie_foto,
-                k.kode_kelas,
-                li.nama_lokasi,
-                u.nama_depan,
-                u.nama_belakang
+                MIN(k.kode_kelas) AS kode_kelas,
+                MIN(li.nama_lokasi) AS nama_lokasi,
+                MIN(u.nama_depan) AS nama_depan,
+                MIN(u.nama_belakang) AS nama_belakang
             ')
             ->join('absensi_detail ad', 'ad.absensi_id = a.id')
             ->join('murid m', 'm.id = ad.murid_id')
@@ -52,14 +52,14 @@ class AdminFotoKegiatan extends BaseController
             ->join('users u', 'u.id = a.guru_id', 'left')
             ->where('a.selfie_foto IS NOT NULL', null, false)
             ->where('a.tanggal', $tanggal)
-            ->groupBy('a.id'); // ⬅️ PENTING
+            ->groupBy('a.id, a.tanggal, a.jam, a.selfie_foto');
 
         if ($kelas) {
             $builder->where('m.kelas_id', $kelas);
         }
 
         $rows = $builder
-            ->orderBy('k.kode_kelas', 'ASC')
+            ->orderBy('kode_kelas', 'ASC')
             ->orderBy('a.jam', 'ASC')
             ->get()
             ->getResultArray();
@@ -77,3 +77,4 @@ class AdminFotoKegiatan extends BaseController
         ]);
     }
 }
+
