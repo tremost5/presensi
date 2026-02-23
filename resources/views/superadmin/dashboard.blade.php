@@ -226,8 +226,7 @@ new Chart(document.getElementById('chartRole'), {
   }
 });
 
-let csrfName = '<?= csrf_token() ?>';
-let csrfHash = '<?= csrf_hash() ?>';
+const csrfToken = '<?= csrf_token() ?>';
 
 function doAction(type) {
   if (!confirm('Yakin melakukan aksi ini?')) return;
@@ -236,20 +235,16 @@ function doAction(type) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
+      'X-CSRF-TOKEN': csrfToken,
       'X-Requested-With': 'XMLHttpRequest'
     },
     body: new URLSearchParams({
       type: type,
-      [csrfName]: csrfHash
+      _token: csrfToken
     })
   })
   .then(r => r.json())
   .then(r => {
-    if (r.csrf && r.csrf.name && r.csrf.hash) {
-      csrfName = r.csrf.name;
-      csrfHash = r.csrf.hash;
-    }
-
     if (r.status === 'success') {
       toastr.success(r.message || 'Berhasil');
       setTimeout(() => location.reload(), 1200);
