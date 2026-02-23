@@ -37,6 +37,15 @@
   pointer-events:auto;
   transform:translate(-50%,-50%) scale(1);
 }
+
+#guruCard #gFoto{
+  image-orientation: from-image;
+  object-fit: cover;
+}
+
+#guruCard #gFoto.is-rotated{
+  transform: rotate(90deg);
+}
 </style>
 
 <section class="content">
@@ -220,8 +229,22 @@ fetch(`<?= base_url($prefixGuru . '/detail') ?>/${id}`,{
  popup.elFoto.src = g.foto
    ? `${fotoBase}/${g.foto}`
    : defaultFoto;
+ popup.elFoto.classList.remove('is-rotated');
+ popup.elFoto.onload = function () {
+   // Fallback: beberapa foto HP tersimpan landscape tanpa orientasi yang terbaca.
+   // Jika rasio terlalu lebar, putar agar wajah tampil tegak di card.
+   const w = this.naturalWidth || 0;
+   const h = this.naturalHeight || 0;
+   if (w > 0 && h > 0 && (w / h) > 1.15) {
+     this.classList.add('is-rotated');
+   } else {
+     this.classList.remove('is-rotated');
+   }
+ };
  popup.elFoto.onerror = function () {
    this.onerror = null;
+   this.onload = null;
+   this.classList.remove('is-rotated');
    this.src = defaultFoto;
  };
 
