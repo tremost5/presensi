@@ -133,6 +133,7 @@ class Absensi extends Controller
             // LOG
             $this->db->table('absensi_log')->insert([
                 'absensi_detail_id' => $absensiDetailId,
+                'murid_id'    => (int) $muridId,
                 'aksi'        => 'create',
                 'status_baru' => $status,
                 'oleh'        => 'guru',
