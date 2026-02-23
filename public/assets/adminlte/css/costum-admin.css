@@ -1,0 +1,59 @@
+/* GLOBAL */
+.content-wrapper {
+  background: #f4f6f9;
+}
+
+/* SIDEBAR */
+.main-sidebar {
+  background: linear-gradient(180deg,#1e1e2f,#2b2b45);
+}
+
+/* DASHBOARD CARDS */
+.small-box {
+  border-radius: 12px;
+}
+
+/* ULTANG CARD */
+.ultah-header {
+  background: linear-gradient(45deg,#ff9800,#ffc107);
+  color: #fff;
+}
+
+.ultah-body {
+  background: #f9fafb;
+}
+
+.ultah-item {
+  border-radius: 12px;
+  transition: .3s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.ultah-item:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 25px rgba(0,0,0,.15);
+}
+
+.ultah-item .usia {
+  font-size: 36px;
+  font-weight: 800;
+  color: #ff9800;
+}
+
+.ultah-today {
+  border: 2px solid #e91e63;
+}
+
+.badge-hbd {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}

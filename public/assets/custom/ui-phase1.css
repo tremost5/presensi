@@ -1,0 +1,198 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --ui-bg: #f4f7fb;
+  --ui-text: #0f172a;
+  --ui-muted: #64748b;
+  --ui-card: #ffffff;
+  --ui-border: #dbe4f0;
+  --ui-brand: #0f766e;
+  --ui-brand-strong: #115e59;
+  --ui-accent: #f59e0b;
+  --ui-info: #0ea5e9;
+  --ui-success: #16a34a;
+  --ui-danger: #dc2626;
+  --ui-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+  --ui-shadow-soft: 0 6px 16px rgba(15, 23, 42, 0.06);
+}
+
+body.ui-shell {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: var(--ui-text);
+  background:
+    radial-gradient(1200px 600px at 100% -10%, rgba(14, 165, 233, 0.12), transparent 55%),
+    radial-gradient(900px 520px at -15% 10%, rgba(15, 118, 110, 0.14), transparent 55%),
+    linear-gradient(180deg, #f8fbff 0%, var(--ui-bg) 100%);
+}
+
+body.ui-shell .wrapper {
+  min-height: 100vh;
+}
+
+body.ui-shell .main-header {
+  border-bottom: 1px solid var(--ui-border);
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 4px 18px rgba(2, 8, 23, 0.05);
+}
+
+body.ui-shell .main-sidebar {
+  background:
+    linear-gradient(180deg, #0b1328 0%, #10213d 60%, #0f1f38 100%);
+  border-right: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+body.ui-shell .brand-link {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  color: #e2e8f0 !important;
+  letter-spacing: 0.08em;
+  font-weight: 800 !important;
+}
+
+body.ui-shell .main-sidebar .user-panel {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+body.ui-shell .main-sidebar .user-panel .info > a,
+body.ui-shell .main-sidebar .user-panel small {
+  color: #d5e1f4 !important;
+}
+
+body.ui-shell .content-wrapper {
+  background: transparent;
+}
+
+body.ui-shell .content {
+  padding-bottom: 2rem;
+}
+
+body.ui-shell .card,
+body.ui-shell .small-box,
+body.ui-shell .info-box,
+body.ui-shell .callout,
+body.ui-shell .alert {
+  border-radius: 14px;
+  border: 1px solid var(--ui-border);
+  box-shadow: var(--ui-shadow-soft);
+}
+
+body.ui-shell .card {
+  overflow: hidden;
+}
+
+body.ui-shell .card-header {
+  border-bottom: 1px solid var(--ui-border);
+  font-weight: 700;
+}
+
+body.ui-shell .btn {
+  border-radius: 10px;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+body.ui-shell .btn-primary {
+  background: linear-gradient(135deg, var(--ui-brand) 0%, var(--ui-brand-strong) 100%);
+  border-color: var(--ui-brand-strong);
+}
+
+body.ui-shell .btn-primary:hover,
+body.ui-shell .btn-primary:focus {
+  filter: brightness(1.04);
+}
+
+body.ui-shell .form-control,
+body.ui-shell .custom-select {
+  border-radius: 10px;
+  border: 1px solid #cad7e6;
+  box-shadow: none;
+}
+
+body.ui-shell .form-control:focus,
+body.ui-shell .custom-select:focus {
+  border-color: #5ab7c7;
+  box-shadow: 0 0 0 0.2rem rgba(15, 118, 110, 0.14);
+}
+
+body.ui-shell table.table thead th {
+  border-top: 0;
+  color: #334155;
+  font-weight: 700;
+}
+
+body.ui-shell .nav-sidebar .nav-header {
+  margin-top: 0.75rem;
+  color: #93c5fd;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+body.ui-shell .sidebar-premium .nav-link {
+  margin: 3px 8px;
+  border-radius: 10px;
+  color: #dbeafe;
+}
+
+body.ui-shell .sidebar-premium .nav-link:hover {
+  background: rgba(30, 64, 175, 0.35);
+  color: #ffffff;
+  transform: translateX(2px);
+}
+
+body.ui-shell .sidebar-premium .nav-link.active {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0f766e 100%);
+  box-shadow: 0 8px 20px rgba(6, 78, 59, 0.35);
+}
+
+body.ui-shell .dropdown-menu {
+  border-radius: 12px;
+  border: 1px solid var(--ui-border);
+  box-shadow: var(--ui-shadow);
+}
+
+body.ui-shell .content-header h1,
+body.ui-shell h1,
+body.ui-shell h2,
+body.ui-shell h3 {
+  letter-spacing: -0.02em;
+}
+
+body.ui-shell .app-reveal {
+  animation: appReveal 0.45s ease-out both;
+}
+
+@keyframes appReveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 991.98px) {
+  body.ui-shell .content-wrapper {
+    margin-left: 0 !important;
+  }
+
+  body.ui-shell .content {
+    padding-bottom: 5rem;
+  }
+
+  body.ui-shell .main-header {
+    position: sticky;
+    top: 0;
+    z-index: 1035;
+  }
+}
+
+@media (min-width: 992px) {
+  .sidebar-overlay {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+}
