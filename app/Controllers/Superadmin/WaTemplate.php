@@ -28,10 +28,8 @@ class WaTemplate extends BaseController
 
         $users = (new UserModel())
             ->select('id, role_id, nama_depan, nama_belakang, no_hp, status')
-            ->groupStart()
-                ->where('role_id', 1)
-                ->orWhere('role_id', 2)
-            ->groupEnd()
+            ->where('role_id', 1)
+            ->orWhere('role_id', 2)
             ->orderBy('role_id', 'ASC')
             ->orderBy('nama_depan', 'ASC')
             ->findAll();
