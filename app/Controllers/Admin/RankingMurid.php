@@ -42,7 +42,7 @@ class RankingMurid extends BaseController
                  AND d.tanggal BETWEEN '{$start}' AND '{$end}'",
                 'left'
             )
-            ->groupBy('m.id')
+            ->groupBy(['m.id', 'm.nama_depan', 'm.nama_belakang', 'k.nama_kelas'])
             ->orderBy('total_point', 'DESC');
 
         if ($kelasId) {
@@ -86,7 +86,7 @@ class RankingMurid extends BaseController
                  AND d.tanggal BETWEEN '{$start}' AND '{$end}'",
                 'left'
             )
-            ->groupBy('m.id')
+            ->groupBy(['m.id', 'm.nama_depan', 'm.nama_belakang', 'k.nama_kelas'])
             ->orderBy('total_point', 'DESC');
 
         if ($kelasId) {
