@@ -99,7 +99,7 @@ public function guru()
         WHERE a.status = 'hadir'
           AND MONTH(a.tanggal) = MONTH(CURDATE())
           AND YEAR(a.tanggal) = YEAR(CURDATE())
-        GROUP BY m.id
+        GROUP BY m.id, m.nama_depan, m.nama_belakang, m.foto
         ORDER BY total_hadir DESC
         LIMIT 5
     ")->getResultArray();
