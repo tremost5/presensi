@@ -41,10 +41,7 @@
 #guruCard #gFoto{
   image-orientation: from-image;
   object-fit: cover;
-}
-
-#guruCard #gFoto.is-rotated{
-  transform: rotate(90deg);
+  transition: transform .2s ease;
 }
 </style>
 
@@ -141,6 +138,11 @@
      class="img-circle mb-3"
      width="90" height="90"
      style="object-fit:cover">
+<div class="mb-2">
+  <button type="button" class="btn btn-sm btn-outline-secondary" id="btnRotateFoto">
+    Putar Foto
+  </button>
+</div>
 
 <h5 id="gNama" class="mb-1"></h5>
 <div class="text-muted mb-2" id="gUsername"></div>
@@ -178,6 +180,9 @@ function ensureGuruPopupElements() {
     card.innerHTML = `
       <div class="card-body text-center">
         <img id="gFoto" class="img-circle mb-3" width="90" height="90" style="object-fit:cover">
+        <div class="mb-2">
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="btnRotateFoto">Putar Foto</button>
+        </div>
         <h5 id="gNama" class="mb-1"></h5>
         <div class="text-muted mb-2" id="gUsername"></div>
         <hr>
@@ -200,8 +205,18 @@ function ensureGuruPopupElements() {
     elUsername: document.getElementById('gUsername'),
     elAlamat: document.getElementById('gAlamat'),
     elHp: document.getElementById('gHp'),
-    elFoto: document.getElementById('gFoto')
+    elFoto: document.getElementById('gFoto'),
+    btnRotateFoto: document.getElementById('btnRotateFoto')
   };
+}
+
+let manualRotation = 0;
+let autoRotation = 0;
+
+function applyFotoRotation(elFoto) {
+  if (!elFoto) return;
+  const finalRotation = (autoRotation + manualRotation) % 360;
+  elFoto.style.transform = `rotate(${finalRotation}deg)`;
 }
 
 /* OPEN PREVIEW */
@@ -229,22 +244,27 @@ fetch(`<?= base_url($prefixGuru . '/detail') ?>/${id}`,{
  popup.elFoto.src = g.foto
    ? `${fotoBase}/${g.foto}`
    : defaultFoto;
- popup.elFoto.classList.remove('is-rotated');
+ manualRotation = 0;
+ autoRotation = 0;
+ applyFotoRotation(popup.elFoto);
+ if (popup.btnRotateFoto) {
+   popup.btnRotateFoto.onclick = function () {
+     manualRotation = (manualRotation + 90) % 360;
+     applyFotoRotation(popup.elFoto);
+   };
+ }
  popup.elFoto.onload = function () {
-   // Fallback: beberapa foto HP tersimpan landscape tanpa orientasi yang terbaca.
-   // Jika rasio terlalu lebar, putar agar wajah tampil tegak di card.
    const w = this.naturalWidth || 0;
    const h = this.naturalHeight || 0;
-   if (w > 0 && h > 0 && (w / h) > 1.15) {
-     this.classList.add('is-rotated');
-   } else {
-     this.classList.remove('is-rotated');
-   }
+   autoRotation = (w > 0 && h > 0 && (w / h) > 1.15) ? 90 : 0;
+   applyFotoRotation(this);
  };
  popup.elFoto.onerror = function () {
    this.onerror = null;
    this.onload = null;
-   this.classList.remove('is-rotated');
+   manualRotation = 0;
+   autoRotation = 0;
+   applyFotoRotation(this);
    this.src = defaultFoto;
  };
 
