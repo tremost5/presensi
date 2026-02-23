@@ -153,6 +153,11 @@
 <script>
 const card=document.getElementById('guruCard');
 const back=document.getElementById('guruBackdrop');
+const elNama = document.getElementById('gNama');
+const elUsername = document.getElementById('gUsername');
+const elAlamat = document.getElementById('gAlamat');
+const elHp = document.getElementById('gHp');
+const elFoto = document.getElementById('gFoto');
 
 /* OPEN PREVIEW */
 function openGuru(id){
@@ -160,27 +165,33 @@ fetch(`<?= base_url($prefixGuru . '/detail') ?>/${id}`,{
  headers:{'X-Requested-With':'XMLHttpRequest'}
 })
 .then(r=>r.json()).then(res=>{
+ if(!res || res.status !== 'ok' || !res.data){
+   alert('Detail guru tidak ditemukan.');
+   return;
+ }
  const g=res.data;
 
- gNama.innerText =
+ elNama.innerText =
    (g.nama_depan||'')+' '+(g.nama_belakang||'');
 
- gUsername.innerText = '@'+g.username;
- gAlamat.innerText   = g.alamat || '-';
- gHp.innerText       = g.no_hp || '-';
+ elUsername.innerText = '@'+g.username;
+ elAlamat.innerText   = g.alamat || '-';
+ elHp.innerText       = g.no_hp || '-';
 
  const fotoBase = '<?= rtrim(base_url('uploads/guru'), '/') ?>';
  const defaultFoto = '<?= base_url('uploads/guru/default.png') ?>';
- gFoto.src = g.foto
+ elFoto.src = g.foto
    ? `${fotoBase}/${g.foto}`
    : defaultFoto;
- gFoto.onerror = function () {
+ elFoto.onerror = function () {
    this.onerror = null;
    this.src = defaultFoto;
  };
 
  back.classList.add('show');
  card.classList.add('show');
+}).catch(() => {
+ alert('Gagal memuat detail guru.');
 });
 }
 

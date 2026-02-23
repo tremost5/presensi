@@ -298,40 +298,49 @@ class AdminGuru extends BaseController
         if (!$this->request->isAJAX()) {
             return $this->response->setStatusCode(403);
         }
+        try {
+            $startToday = date('Y-m-d 00:00:00');
+            $fields = array_map('strtolower', $this->db->getFieldNames('users'));
+            $hasCreatedAt = in_array('created_at', $fields, true);
 
-        $startToday = date('Y-m-d 00:00:00');
-        $fields = array_map('strtolower', $this->db->getFieldNames('users'));
-        $hasCreatedAt = in_array('created_at', $fields, true);
-
-        $nonaktif = (int) $this->db->table('users')
-            ->where('role_id', 3)
-            ->where('status', 'nonaktif')
-            ->countAllResults();
-
-        $baruHariIni = 0;
-        if ($hasCreatedAt) {
-            $baruHariIni = (int) $this->db->table('users')
+            $nonaktif = (int) $this->db->table('users')
                 ->where('role_id', 3)
-                ->where('created_at >=', $startToday)
+                ->where('status', 'nonaktif')
                 ->countAllResults();
-        }
 
-        $totalAlert = $nonaktif;
-        if ($hasCreatedAt) {
-            $totalAlert = (int) $this->db->table('users')
-                ->where('role_id', 3)
-                ->groupStart()
-                    ->where('status', 'nonaktif')
-                    ->orWhere('created_at >=', $startToday)
-                ->groupEnd()
-                ->countAllResults();
-        }
+            $baruHariIni = 0;
+            if ($hasCreatedAt) {
+                $baruHariIni = (int) $this->db->table('users')
+                    ->where('role_id', 3)
+                    ->where('created_at >=', $startToday)
+                    ->countAllResults();
+            }
 
-        return $this->response->setJSON([
-            'nonaktif' => $nonaktif,
-            'baru_hari_ini' => $baruHariIni,
-            'total_alert' => $totalAlert,
-            'has_alert' => $totalAlert > 0,
-        ]);
+            $totalAlert = $nonaktif;
+            if ($hasCreatedAt) {
+                $totalAlert = (int) $this->db->table('users')
+                    ->where('role_id', 3)
+                    ->groupStart()
+                        ->where('status', 'nonaktif')
+                        ->orWhere('created_at >=', $startToday)
+                    ->groupEnd()
+                    ->countAllResults();
+            }
+
+            return $this->response->setJSON([
+                'nonaktif' => $nonaktif,
+                'baru_hari_ini' => $baruHariIni,
+                'total_alert' => $totalAlert,
+                'has_alert' => $totalAlert > 0,
+            ]);
+        } catch (\Throwable $e) {
+            return $this->response->setJSON([
+                'nonaktif' => 0,
+                'baru_hari_ini' => 0,
+                'total_alert' => 0,
+                'has_alert' => false,
+                'error' => true,
+            ]);
+        }
     }
 }
