@@ -122,6 +122,7 @@ foreach($grp as $k=>$list):
     <div id="muridAvatar"></div>
     <img id="muridFoto">
     <h5 id="muridNama"></h5>
+    <div id="muridPanggilan" class="text-muted"></div>
     <div id="muridKelas" class="text-muted"></div>
     <button type="button" id="closeMuridPreview" class="btn btn-light btn-sm mt-2">Tutup</button>
   </div>
@@ -144,6 +145,7 @@ const muridCard = document.getElementById('muridCard');
 const muridFoto = document.getElementById('muridFoto');
 const muridAvatar = document.getElementById('muridAvatar');
 const muridNama = document.getElementById('muridNama');
+const muridPanggilan = document.getElementById('muridPanggilan');
 const muridKelas = document.getElementById('muridKelas');
 document.body.appendChild(muridPreview);
 
@@ -161,7 +163,8 @@ document.querySelectorAll('.nama-murid').forEach(n=>{
   n.onclick=e=>{
     e.stopPropagation();
     muridNama.innerText=n.dataset.nama;
-    muridKelas.innerText='Kelas '+n.dataset.kelas;
+    muridPanggilan.innerText='Panggilan: '+(n.dataset.panggilan || '-');
+    muridKelas.innerText='Kelas: '+n.dataset.kelas;
     muridAvatar.innerText = getInitials(n.dataset.nama).toUpperCase() || '?';
     muridAvatar.style.display = 'flex';
     muridFoto.style.display = 'none';

@@ -138,7 +138,7 @@ body {
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <div class="modal-body">
+      <div class="modal-body" id="pwaInstallBody">
         Tambahkan Presensi DSCM ke layar utama agar akses lebih cepat.
       </div>
       <div class="modal-footer">
@@ -163,42 +163,104 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 <script>
-(() => {
+document.addEventListener('DOMContentLoaded', () => {
   let deferredPrompt = null;
+  const modal = document.getElementById('pwaInstallModal');
+  const modalBody = document.getElementById('pwaInstallBody');
   const installButton = document.getElementById('btnInstallPwa');
-  const shownFlag = 'pwa-install-modal-shown';
+  const closeButtons = modal.querySelectorAll('[data-dismiss="modal"], .close');
+  const shownFlag = 'pwa-install-modal-shown-v2';
+
+  const ua = navigator.userAgent.toLowerCase();
+  const isIos = /iphone|ipad|ipod/.test(ua);
+  const isSafari = /safari/.test(ua) && !/crios|fxios|edgios|chrome|android/.test(ua);
+  const isChromium = /chrome|crios|edg|opr/.test(ua);
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+  function showModal() {
+    if (!modal) return;
+    modal.style.display = 'block';
+    modal.classList.add('show');
+    modal.setAttribute('aria-modal', 'true');
+    modal.removeAttribute('aria-hidden');
+    document.body.classList.add('modal-open');
+
+    let backdrop = document.getElementById('pwaModalBackdrop');
+    if (!backdrop) {
+      backdrop = document.createElement('div');
+      backdrop.id = 'pwaModalBackdrop';
+      backdrop.className = 'modal-backdrop fade show';
+      backdrop.addEventListener('click', hideModal);
+      document.body.appendChild(backdrop);
+    }
+  }
+
+  function hideModal() {
+    if (!modal) return;
+    modal.classList.remove('show');
+    modal.style.display = 'none';
+    modal.setAttribute('aria-hidden', 'true');
+    modal.removeAttribute('aria-modal');
+    document.body.classList.remove('modal-open');
+    document.getElementById('pwaModalBackdrop')?.remove();
+  }
+
+  closeButtons.forEach((btn) => btn.addEventListener('click', hideModal));
 
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/pwa/sw.js', { scope: '/' }).catch(() => {});
   }
 
+  if (isStandalone) return;
+
+  if (isIos && isSafari) {
+    if (!sessionStorage.getItem(shownFlag)) {
+      sessionStorage.setItem(shownFlag, '1');
+      modalBody.innerHTML = 'Safari iPhone/iPad: tap <b>Share</b> lalu pilih <b>Add to Home Screen</b>.';
+      installButton.textContent = 'Saya Mengerti';
+      installButton.onclick = hideModal;
+      showModal();
+    }
+    return;
+  }
+
   window.addEventListener('beforeinstallprompt', (event) => {
     event.preventDefault();
     deferredPrompt = event;
-
     if (!sessionStorage.getItem(shownFlag)) {
       sessionStorage.setItem(shownFlag, '1');
-      $('#pwaInstallModal').modal('show');
+      modalBody.textContent = 'Tambahkan Presensi DSCM ke layar utama agar akses lebih cepat.';
+      installButton.textContent = 'Install';
+      installButton.onclick = async () => {
+        if (!deferredPrompt) {
+          hideModal();
+          return;
+        }
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        hideModal();
+      };
+      showModal();
     }
   });
 
-  installButton?.addEventListener('click', async () => {
-    if (!deferredPrompt) {
-      $('#pwaInstallModal').modal('hide');
-      return;
-    }
-
-    deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
-    deferredPrompt = null;
-    $('#pwaInstallModal').modal('hide');
-  });
+  if (isChromium && !sessionStorage.getItem(shownFlag)) {
+    setTimeout(() => {
+      if (deferredPrompt || sessionStorage.getItem(shownFlag)) return;
+      sessionStorage.setItem(shownFlag, '1');
+      modalBody.innerHTML = 'Chrome: buka menu browser (<b>⋮</b>) lalu pilih <b>Install app</b> atau <b>Add to Home screen</b>.';
+      installButton.textContent = 'Tutup';
+      installButton.onclick = hideModal;
+      showModal();
+    }, 1500);
+  }
 
   window.addEventListener('appinstalled', () => {
     deferredPrompt = null;
-    $('#pwaInstallModal').modal('hide');
+    hideModal();
   });
-})();
+});
 </script>
 
 
