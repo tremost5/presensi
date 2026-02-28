@@ -87,6 +87,27 @@
   border-bottom: 0;
   padding-bottom: 0;
 }
+.birthday-name-link {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-weight: 700;
+  color: #0f172a;
+  cursor: pointer;
+  text-align: left;
+}
+.birthday-name-link:hover {
+  color: #be185d;
+  text-decoration: underline;
+}
+.birthday-photo {
+  width: 88px;
+  height: 88px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1px solid #dbe4f0;
+  background: #f8fafc;
+}
 @media (max-width: 991.98px) {
   .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .guru-alert-grid { grid-template-columns: 1fr; }
@@ -174,8 +195,27 @@
             <div class="chart-sub mt-2">Tidak ada ulang tahun guru dalam rentang ini.</div>
           <?php else: ?>
             <?php foreach ($ultahGuru as $g): ?>
+              <?php
+                $namaGuru = trim(($g['nama_depan'] ?? '').' '.($g['nama_belakang'] ?? ''));
+                $tanggalLahirRaw = (string) ($g['tanggal_lahir'] ?? '');
+                $tanggalLahirFmt = $tanggalLahirRaw !== '' ? date('d M Y', strtotime($tanggalLahirRaw)) : '-';
+                $fotoGuru = trim((string) ($g['foto'] ?? ''));
+                $fotoGuruUrl = $fotoGuru !== ''
+                  ? base_url('uploads/guru/'.rawurlencode($fotoGuru))
+                  : base_url('uploads/guru/default.png');
+              ?>
               <div class="list-item">
-                <strong><?= esc(($g['nama_depan'] ?? '').' '.($g['nama_belakang'] ?? '')) ?></strong>
+                <button
+                  type="button"
+                  class="birthday-name-link"
+                  data-role="birthday-detail"
+                  data-nama="<?= esc($namaGuru, 'attr') ?>"
+                  data-ultah-ke="<?= esc((string) ($g['usia'] ?? '-'), 'attr') ?>"
+                  data-tanggal-lahir="<?= esc($tanggalLahirFmt, 'attr') ?>"
+                  data-foto="<?= esc($fotoGuruUrl, 'attr') ?>"
+                >
+                  <?= esc($namaGuru) ?>
+                </button>
                 <div class="chart-sub">
                   <?= date('d M', strtotime($g['tanggal_lahir'])) ?> • <?= esc((string) ($g['usia'] ?? '-')) ?> tahun
                 </div>
@@ -230,6 +270,29 @@
   </div>
 </section>
 
+<div class="modal fade" id="birthdayDetailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Detail Ulang Tahun</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="d-flex align-items-start">
+          <img id="birthdayPhoto" class="birthday-photo mr-3" src="<?= esc(base_url('uploads/guru/default.png')) ?>" alt="Foto ulang tahun">
+          <div>
+            <div class="mb-2"><strong id="birthdayName">-</strong></div>
+            <div class="chart-sub">Ulang Tahun ke-<span id="birthdayAge">-</span></div>
+            <div class="chart-sub">Tanggal Lahir: <span id="birthdayDate">-</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
 const adminWeeklyLabels = @json($weeklyLabels ?? []);
@@ -238,6 +301,40 @@ const adminMonthlyLabels = @json($monthlyLabels ?? []);
 const adminMonthlyData = @json($monthlyData ?? []);
 
 const adminGrid = { color: 'rgba(148,163,184,.25)', drawTicks: false };
+
+const birthdayModal = window.jQuery ? window.jQuery('#birthdayDetailModal') : null;
+if (birthdayModal && birthdayModal.length) {
+  birthdayModal.appendTo('body');
+}
+
+document.querySelectorAll('[data-role="birthday-detail"]').forEach((el) => {
+  el.addEventListener('click', () => {
+    const nama = el.getAttribute('data-nama') || '-';
+    const ultahKe = el.getAttribute('data-ultah-ke') || '-';
+    const tanggalLahir = el.getAttribute('data-tanggal-lahir') || '-';
+    const foto = el.getAttribute('data-foto') || '<?= esc(base_url('uploads/guru/default.png'), 'js') ?>';
+
+    const nameEl = document.getElementById('birthdayName');
+    const ageEl = document.getElementById('birthdayAge');
+    const dateEl = document.getElementById('birthdayDate');
+    const photoEl = document.getElementById('birthdayPhoto');
+
+    if (nameEl) nameEl.textContent = nama;
+    if (ageEl) ageEl.textContent = ultahKe;
+    if (dateEl) dateEl.textContent = tanggalLahir;
+    if (photoEl) {
+      photoEl.src = foto;
+      photoEl.onerror = function() {
+        this.onerror = null;
+        this.src = '<?= esc(base_url('uploads/guru/default.png'), 'js') ?>';
+      };
+    }
+
+    if (birthdayModal && birthdayModal.length) {
+      birthdayModal.modal('show');
+    }
+  });
+});
 
 new Chart(document.getElementById('chartAdminWeekly'), {
   type: 'line',

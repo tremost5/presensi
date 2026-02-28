@@ -120,6 +120,9 @@ class CiQueryBuilder
 
     public function groupBy(string|array $fields): self
     {
+        if (is_string($fields) && str_contains($fields, ',')) {
+            $fields = array_values(array_filter(array_map('trim', explode(',', $fields))));
+        }
         $this->builder->groupBy($fields);
         return $this;
     }

@@ -69,11 +69,24 @@ public function fetch()
         if (!$this->request->isAJAX()) return $this->response->setStatusCode(403);
 
         $file = $this->request->getFile('file');
-        $namaFile = null;
+        $link = trim((string) ($this->request->getPost('link') ?? ''));
+        $namaFile = '';
 
         if ($file && $file->isValid()) {
             $namaFile = time().'_'.$file->getRandomName();
             $file->move(FCPATH.'uploads/materi', $namaFile);
+        } elseif ($file && $file->getError() !== UPLOAD_ERR_NO_FILE) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'File upload tidak valid'
+            ])->setStatusCode(422);
+        }
+
+        if ($namaFile === '' && $link === '') {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Isi minimal file atau link'
+            ])->setStatusCode(422);
         }
 
         $this->db->table('materi_ajar')->insert([
@@ -82,7 +95,7 @@ public function fetch()
             'kelas_id'   => $this->request->getPost('kelas_id'),
             'kategori'   => $this->request->getPost('kategori'),
             'file'       => $namaFile,
-            'link'       => $this->request->getPost('link'),
+            'link'       => $link,
             'created_at' => date('Y-m-d H:i:s')
         ]);
 
