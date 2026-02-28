@@ -1,5 +1,36 @@
 <?php
 
+if (!function_exists('waToken')) {
+    function waToken(): string
+    {
+        static $cached = null;
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $cached = '';
+
+        try {
+            $db = \Config\Database::connect();
+            $row = $db->table('system_settings')
+                ->where('setting_key', 'fonnte_token')
+                ->get()
+                ->getRowArray();
+
+            $dbToken = trim((string) ($row['value'] ?? ''));
+            if ($dbToken !== '') {
+                $cached = $dbToken;
+                return $cached;
+            }
+        } catch (\Throwable $e) {
+            // fallback to env token
+        }
+
+        $cached = trim((string) env('FONNTE_TOKEN', ''));
+        return $cached;
+    }
+}
+
 function formatWA($no)
 {
     $no = preg_replace('/[^0-9]/', '', $no);
@@ -19,7 +50,7 @@ function kirimWA($no, $pesan)
 {
     $url = 'https://api.fonnte.com/send';
 
-    $token = env('FONNTE_TOKEN'); // WAJIB ADA
+    $token = waToken();
 
     if (!$token) {
         log_message('error', 'TOKEN WA TIDAK ADA');

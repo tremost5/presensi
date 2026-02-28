@@ -146,6 +146,14 @@ SYSTEM
 </li>
 
 <li class="nav-item">
+  <a href="<?= base_url('superadmin/wa-token') ?>"
+     class="nav-link <?= str_contains(uri_string(),'superadmin/wa-token')?'active':'' ?>">
+    <i class="nav-icon fas fa-key"></i>
+    <p>Token Fonnte</p>
+  </a>
+</li>
+
+<li class="nav-item">
   <a href="<?= base_url('superadmin/tahun-ajaran') ?>"
      class="nav-link <?= str_contains(uri_string(),'superadmin/tahun-ajaran')?'active':'' ?>">
     <i class="nav-icon fas fa-calendar-alt"></i>
